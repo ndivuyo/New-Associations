@@ -88,6 +88,23 @@ struct SamplePlayer {
 	}
 
 	//
+	void normalize() {
+		float highest = 0;
+		//find highest sample val
+		for (int i = 0; i < data.sampleLen; ++i) {
+			if (data.samples[i] > highest) {
+				highest = data.samples[i];
+			}
+		}
+		//
+		float scale = 1 / highest;
+		//scale accordingly
+		for (int i = 0; i < data.sampleLen; ++i) {
+			data.samples[i] = data.samples[i]*scale;
+		}
+	}
+
+	//
 	void cleanup() {
     	delete[] data.samples;
     }

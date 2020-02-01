@@ -62,6 +62,8 @@ struct Sequence {
 		playerDesire.setup("", answerSize);
 		playerFearQuestion.setup(filenameFear, 0);
 		playerDesireQuestion.setup(filenameDesire, 0);
+		playerFearQuestion.normalize();
+		playerDesireQuestion.normalize();
 		//
 		frame = -1;
 	}
@@ -168,6 +170,9 @@ struct Sequence {
 		// Start fear at beg and Desire at halfway for ping pong
 		playerFear.setPos(playerFear.loopStart);
 		playerDesire.setPos(playerDesire.loopStart + loopLen/2);
+		//Normalize volumes
+		playerFear.normalize();
+		playerDesire.normalize();
 	}
 
 

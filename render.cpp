@@ -73,19 +73,28 @@ void render(BelaContext *context, void *userData) {
 	for (unsigned int n = 0; n < context->audioFrames; ++n) {
 		// Read Analog Ins (Pressure Sensors)
 		if(audioFramesPerAnalogFrame && !(n % audioFramesPerAnalogFrame)) {
+			//
+			int analogFrame = n/audioFramesPerAnalogFrame;
 			//Add to pressure level for sitting detection
 			sequence.pressureLvl = 0;
 			for (int i = 0; i < N_SENSORS; ++i) {
-				sequence.pressureLvl += analogRead(context, n/audioFramesPerAnalogFrame, i);
+				sequence.pressureLvl += analogRead(context, analogFrame, i);
 			}
-			//
+			// Scale pressure depending on # of sensors
 			sequence.pressureLvl = sequence.pressureLvl/N_SENSORS;
+			// Debug
 			//printFloatRate(1000, millis, sequence.pressureLvl);
+			// Write to lights 
+			for (int i = 0; i < 2; ++i) {
+				float lv = pow(std::abs(outSums[i]), 1.5)*0.3 + 0.228;
+				analogWrite(context, analogFrame, i, lv);
+			}
 		}
 		// Read Audio ins
 		float inL = audioRead(context, n, 0) * fearMicGain;
 		float inR = audioRead(context, n, 1) * desireMicGain;
 		float inMic = audioRead(context, n, 2) * micGain;
+		// Debug
 		//printFloatRate(100, millis, std::abs(inMic));
 		// Run Resquence
 		sequence.run(inL, inR, inMic, outSums, millis);
