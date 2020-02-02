@@ -92,8 +92,9 @@ struct SamplePlayer {
 		float highest = 0;
 		//find highest sample val
 		for (int i = 0; i < data.sampleLen; ++i) {
-			if (data.samples[i] > highest) {
-				highest = data.samples[i];
+			float absVal = std::abs(data.samples[i]);
+			if (absVal > highest) {
+				highest = absVal;
 			}
 		}
 		//
