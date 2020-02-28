@@ -20,8 +20,8 @@ const int N_AUDIO_CHANNELS = 2;
 const int N_SENSORS = 2;
 // Parameters
 float micGain = 35;
-float fearMicGain = 0.6;
-float desireMicGain = 0.6;
+float fearMicGain = 3;
+float desireMicGain = 3;
 float questionGain = 1;
 float loThreshSpeech = 0.039;
 float hiThreshSpeech = 0.039;
@@ -31,8 +31,6 @@ int audioFramesPerAnalogFrame;
 float outSums[N_AUDIO_CHANNELS];
 // 
 Sequence sequence(loThreshSpeech, hiThreshSpeech, sensorThresh, questionGain);
-//
-int printLock = 1;
 
 
 
@@ -42,14 +40,6 @@ int printLock = 1;
 //
 int getMillis(BelaContext *context) {
 	return 1000 * (double)(context->audioFramesElapsed)/(double)context->audioSampleRate;
-}
-
-//
-void printFloatRate(int rate, int millis, float toprint) {
-	if (millis%rate == 0 && !printLock) {
-		rt_printf("%f\n", toprint);
-		printLock = 1;
-	} else if (printLock == 1) printLock = 0;
 }
 
 
@@ -67,26 +57,22 @@ bool setup(BelaContext *context, void *userData) {
 
 //
 void render(BelaContext *context, void *userData) {
-	//
 	int millis = getMillis(context);
 	// iterate through audio frames
 	for (unsigned int n = 0; n < context->audioFrames; ++n) {
 		// Read Analog Ins (Pressure Sensors)
 		if(audioFramesPerAnalogFrame && !(n % audioFramesPerAnalogFrame)) {
-			//
 			int analogFrame = n/audioFramesPerAnalogFrame;
-			//Add to pressure level for sitting detection
+			//Add each sensor in to pressure level for human detection
 			sequence.pressureLvl = 0;
 			for (int i = 0; i < N_SENSORS; ++i) {
 				sequence.pressureLvl += analogRead(context, analogFrame, i);
 			}
-			// Scale pressure depending on # of sensors
+			// Scale pressure with # of sensors
 			sequence.pressureLvl = sequence.pressureLvl/N_SENSORS;
-			// Debug
-			//printFloatRate(1000, millis, sequence.pressureLvl);
-			// Write to lights 
+			// Control brightness of lights with sclaled amplitudes of speakers
 			for (int i = 0; i < 2; ++i) {
-				float lv = pow(std::abs(outSums[i]), 1.5)*0.3 + 0.228;
+				float lv = pow(std::abs(outSums[i]), 1.65)*0.27 + 0.226;
 				analogWrite(context, analogFrame, i, lv);
 			}
 		}
@@ -94,9 +80,7 @@ void render(BelaContext *context, void *userData) {
 		float inL = audioRead(context, n, 0) * fearMicGain;
 		float inR = audioRead(context, n, 1) * desireMicGain;
 		float inMic = audioRead(context, n, 2) * micGain;
-		// Debug
-		//printFloatRate(100, millis, std::abs(inMic));
-		// Run Resquence
+		// Run sequence
 		sequence.run(inL, inR, inMic, outSums, millis);
 		// Output to Audio Channels
 		for (unsigned int ch = 0; ch < N_AUDIO_CHANNELS; ++ch) {

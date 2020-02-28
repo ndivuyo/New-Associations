@@ -1,12 +1,12 @@
 /*
 
 Dillon Bastan 2020
+Structure for controlling the sequence of events
 
  */
 
 #ifndef SEQUENCE_H_
 #define SEQUENCE_H_
-
 
 #include <string>
 #include <SamplePlayer.h>
@@ -77,18 +77,16 @@ struct Sequence {
 			// Ask Fear Question
 			case 0:
 				outSums[CHANNEL_FEAR] = playerFearQuestion.play() * questionGain;
-				if (playerFearQuestion.resetFlag) {
-					frame++;
-				}
+				if (playerFearQuestion.resetFlag) frame++;
 				break;
 			// Record Fear Answer
 			case 1:
 				playerFear.record(inMic, 0);
 				playerFear.play();
-				//
-				if (!answerBegan) {
-					if (inMic > speechHiThresh) answerBegan = true;
-				} else if ( answerFinished(inMic, millis) ) {
+				// Detect beginning of the answer
+				if (!answerBegan) { if (inMic > speechHiThresh) answerBegan = true; }
+				// Detect answer ending
+				else if ( answerFinished(inMic, millis) ) {
 					playerFear.loopEnd = playerFear.readPtr;
 					frame++;
 					answerBegan = false;
@@ -97,25 +95,23 @@ struct Sequence {
 			// Ask Desire Question
 			case 2:
 				outSums[CHANNEL_DESIRE] = playerDesireQuestion.play() * questionGain;
-				if (playerDesireQuestion.resetFlag) {
-					frame++;
-				}
+				if (playerDesireQuestion.resetFlag) frame++;
 				break;
 			// Record Desire Answer
 			case 3:
 				playerDesire.record(inMic, 0);
 				playerDesire.play();
-				//
-				if (!answerBegan) {
-					if (inMic > speechHiThresh) answerBegan = true;
-				} else if ( answerFinished(inMic, millis) ) {
+				// Detect beginning of the answer
+				if (!answerBegan) { if (inMic > speechHiThresh) answerBegan = true; } 
+				// Detect answer ending
+				else if ( answerFinished(inMic, millis) ) {
 					playerDesire.loopEnd = playerDesire.readPtr;
 					processAnswers();
 					frame++;
 					answerBegan = false;
 				}
 				break;
-			// Overdub Playback
+			// Overdub Playback of the answers
 			case 4:
 				playerFear.record(inFear, 1);
 				outSums[CHANNEL_FEAR] = playerFear.play();
@@ -127,7 +123,7 @@ struct Sequence {
 	}
 
 
-	//
+	// Detect if person is done speaking
 	bool answerFinished(float input, int millis) {
 		bool finished = false;
 		float absIn = std::abs(input);
