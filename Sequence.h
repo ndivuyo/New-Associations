@@ -71,7 +71,7 @@ struct Sequence {
 	//
 	void run(float inFear, float inDesire, float inMic, float *outSums, int millis) {
 		// Detect a new sequence if a new person sits down
-		if ( detectNewSequence(millis) ) reset();
+		if ( detectNewSequence(millis) ) reset(outSums);
 		// Play sequence frame
 		switch(frame) {
 			// Ask Fear Question
@@ -216,7 +216,9 @@ struct Sequence {
 
 
 	//
-	void reset() {
+	void reset(float *outSums) {
+		outSums[0] = 0;
+		outSums[1] = 0;
 		playerFear.resize(answerSize);
 		playerFear.setPos(0);
 		playerDesire.resize(answerSize);

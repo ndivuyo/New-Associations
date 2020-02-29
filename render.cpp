@@ -22,7 +22,7 @@ const int N_SENSORS = 2;
 float micGain = 35;
 float fearMicGain = 3;
 float desireMicGain = 3;
-float questionGain = 1;
+float questionGain = 0.85;
 float loThreshSpeech = 0.039;
 float hiThreshSpeech = 0.039;
 float sensorThresh = 0.5;
@@ -72,7 +72,7 @@ void render(BelaContext *context, void *userData) {
 			sequence.pressureLvl = sequence.pressureLvl/N_SENSORS;
 			// Control brightness of lights with sclaled amplitudes of speakers
 			for (int i = 0; i < 2; ++i) {
-				float lv = pow(std::abs(outSums[i]), 1.65)*0.27 + 0.226;
+				float lv = pow(std::abs(outSums[i]), 1.63)*0.258 + 0.226;
 				analogWrite(context, analogFrame, i, lv);
 			}
 		}
